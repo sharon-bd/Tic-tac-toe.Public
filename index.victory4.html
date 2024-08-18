@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="he">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>איקס עיגול</title>
+    <style>
+        #board button {
+            width: 50px;
+            height: 50px;
+            font-size: 24px;
+            margin: 0;
+            padding: 0;
+            pointer-events: none; /* מונע לחיצה לפני בחירה */
+        }
+
+        .winner {
+            background-color: green; /* רקע ירוק למנצח */
+            color: white; /* צבע טקסט לבן */
+            padding: 5px; /* מרווח סביב הטקסט */
+        }
+
+        .draw {
+            background-color: gray; /* רקע אפור לתיקו */
+            color: white; /* צבע טקסט לבן */
+            padding: 5px; /* מרווח סביב הטקסט */
+        }
+
+        .default {
+            background-color: transparent; /* רקע שקוף עבור שאר ההודעות */
+            color: black; /* צבע טקסט שחור */
+            padding: 5px; /* מרווח סביב הטקסט */
+        }
+    </style>
+</head>
+<body>
+    <div id="display" class="default"></div>
+    <button onclick="setStarter('X')">X מתחיל</button>
+    <button onclick="setStarter('O')">O מתחיל</button>
+    <button id="resetBtn" onclick="resetGame()">אתחל משחק</button>
+    <div id="board" onclick="play(event)">
+        <button data-index="0">-</button><button data-index="1">-</button><button data-index="2">-</button><br>
+        <button data-index="3">-</button><button data-index="4">-</button><button data-index="5">-</button><br>
+        <button data-index="6">-</button><button data-index="7">-</button><button data-index="8">-</button><br>
+    </div>
+
+    <script>
+        let board = ['', '', '', '', '', '', '', '', ''];
+        let currentPlayer = '';
+        let gameStarted = false;
+
+        function setStarter(player) {
+            currentPlayer = player;
+            document.getElementById('display').textContent = `${player} המתחיל הוא !!!`;
+            document.getElementById('display').className = 'default';
+            // הסתרת כפתורי הבחירה
+            document.querySelectorAll('button:not(#board button, #resetBtn)').forEach(button => button.style.display = 'none');
+            // הפעלת כפתורי הלוח
+            document.querySelectorAll('#board button').forEach(button => button.style.pointerEvents = 'auto');
+            gameStarted = true;
+        }
+
+        function play(event) {
+            if (!gameStarted) return;
+
+            const cellIndex = event.target.dataset.index;
+            if (board[cellIndex] !== '') {
+                return;
+            }
+
+            board[cellIndex] = currentPlayer;
+            event.target.textContent = currentPlayer;
+
+            if (checkWin(currentPlayer)) {
+                document.getElementById('display').textContent = `${currentPlayer} :המנצח הוא !! `;
+                document.getElementById('display').className = 'winner';
+                disableBoard();
+            } else if (checkDraw()) {
+                document.getElementById('display').textContent = '!תיקו';
+                document.getElementById('display').className = 'draw';
+                disableBoard();
+            } else {
+                currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+                document.getElementById('display').textContent = `${currentPlayer} תור`;
+                document.getElementById('display').className = 'default';
+            }
+        }
+
+        function checkWin(player) {
+            const winningCombinations = [
+                [0, 1, 2], [3, 4, 5], [6, 7, 8],
+                [0, 3, 6], [1, 4, 7], [2, 5, 8],
+                [0, 4, 8], [2, 4, 6]
+            ];
+
+            return winningCombinations.some(combination => {
+                return combination.every(index => board[index] === player);
+            });
+        }
+
+        function checkDraw() {
+            return board.every(cell => cell !== '');
+        }
+
+        function disableBoard() {
+            document.querySelectorAll('#board button').forEach(button => button.style.pointerEvents = 'none');
+        }
+
+        function resetGame() {
+            board = ['', '', '', '', '', '', '', '', ''];
+            currentPlayer = '';
+            gameStarted = false;
+            document.getElementById('display').textContent = '';
+            document.getElementById('display').className = 'default';
+            document.querySelectorAll('#board button').forEach(button => {
+                button.textContent = '-';
+                button.style.pointerEvents = 'none';
+            });
+            document.querySelectorAll('button:not(#resetBtn)').forEach(button => button.style.display = 'inline-block');
+        }
+    </script>
+</body>
+</html>
